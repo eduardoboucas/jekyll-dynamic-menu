@@ -1,6 +1,6 @@
 # Jekyll Dynamic Menu
 
-> A Liquid snippet to generate markup for a dynamic navigation menu
+> A Liquid snippet to generate markup for a dynamic navigation menu in Jekyll
 
 From this:
 
