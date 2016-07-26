@@ -2,8 +2,12 @@
 {% assign rootComponentsLength = include.root | split: '/' | size %}
 {% assign sortedPages = site.pages | sort: 'url' %}
 {% assign lastPath = nil %}
+{% assign depth = 0 %}
+{% assign depthAttr = "data-menu-depth" %}
 
-<ul class="{{ include.listClass }}">
+{% if include.depthAttr %}
+	{% assign depthAttr = include.depthAttr %}
+{% endif %}
 
 {% for sortedPage in sortedPages %}
 	{% assign pagePath = sortedPage.url %}
@@ -51,15 +55,19 @@
 
 		{% if newLevel %}
 			{% if nextPathLength >= lastPathLength %}
-				<ul>
+				<ul class="{{ include.listClass }}" {{ depthAttr }}="{{ depth }}">
 			{% else %}
-				</ul>
+				</ul></li>
 			{% endif %}
+		{% else %}
+			</li>
 		{% endif %}
 
-		<li>
+		{% assign depth = nextPathLength | minus: rootComponentsLength %}
+
+		<li class="{{ include.listItemClass }}">
 			{% if sortedPage.content != '' %}
-				<a href="{{ sortedPage.url }}" class="{{ include.itemClass }} {% if page.url == sortedPage.url %}{{ include.activeClass }}{% endif %}" data-menu-level="{{ nextPathLength | minus: rootComponentsLength }}">
+				<a href="{{ sortedPage.url }}" class="{{ include.linkClass }} {% if page.url == sortedPage.url %}{{ include.activeClass }}{% endif %}">
 			{% endif %}
 
 			{{ sortedPage.title }}
@@ -67,11 +75,11 @@
 			{% if sortedPage.content != '' %}
 				</a>
 			{% endif %}
-		</li>
 
 		{% assign lastPath = nextPath %}
-		</li>
 	{% endif %}
 {% endfor %}
 
-</ul>
+{% for i in (0..depth) %}
+	</li></ul>
+{% endfor %}
