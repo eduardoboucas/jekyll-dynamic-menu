@@ -3,11 +3,7 @@
 {% assign sortedPages = site.pages | sort: 'url' %}
 {% assign lastPath = nil %}
 {% assign depth = 0 %}
-{% assign depthAttr = "data-menu-depth" %}
-
-{% if include.depthAttr %}
-	{% assign depthAttr = include.depthAttr %}
-{% endif %}
+{% assign depthAttr = include.depthAttr | default: "data-menu-depth" %}
 
 {% for sortedPage in sortedPages %}
 	{% assign pagePath = sortedPage.url %}
