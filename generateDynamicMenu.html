@@ -1,81 +1,83 @@
 {% assign rootLength = include.root | size %}
 {% assign rootComponentsLength = include.root | split: '/' | size %}
-{% assign sortedPages = site.pages | sort: 'url' %}
+{% assign sortedPages = site.html_pages | sort: 'url' %}
 {% assign lastPath = nil %}
 {% assign depth = 0 %}
 {% assign depthAttr = include.depthAttr | default: "data-menu-depth" %}
 
 {% for sortedPage in sortedPages %}
-	{% assign pagePath = sortedPage.url %}
-	{% assign pathSlice = pagePath | slice: 0, rootLength %}
-	
-	{% if include.root == pathSlice %}
-		{% assign pagePathLength = pagePath | size %}
-		{% assign subject = pagePath | slice: rootLength, pagePathLength %}
+  {% assign pagePath = sortedPage.url %}
+  {% assign pathSlice = pagePath | slice: 0, rootLength %}
 
-		{% assign extractLastCharPos = pagePath | size | minus: 1 %}
-		{% assign lastChar = pagePath | slice: extractLastCharPos %}
+  {% if include.root == pathSlice %}
+    {% assign pagePathLength = pagePath | size %}
 
-		{% if lastChar == '/' %}
-			{% assign pagePath = pagePath | slice: 0, extractLastCharPos %}
-		{% endif %}
+    {% assign extractLastCharPos = pagePath | size | minus: 1 %}
+    {% assign lastChar = pagePath | slice: extractLastCharPos %}
 
-		{% assign lastPathLength = lastPath | size %}
-		{% assign nextPath = pagePath | split: '/' %}
-		{% assign nextPathLength = nextPath | size %}
+    {% if lastChar == '/' %}
+      {% assign pagePath = pagePath | slice: 0, extractLastCharPos %}
+    {% endif %}
 
-		{% if nextPathLength >= lastPathLength %}
-			{% assign longestPath = nextPath %}
-			{% assign shortestPath = lastPath %}
-		{% else %}
-			{% assign longestPath = lastPath %}
-			{% assign shortestPath = nextPath %}
-		{% endif %}
+    {% assign lastPathLength = lastPath | size %}
+    {% assign nextPath = pagePath | split: '/' %}
+    {% assign nextPathLength = nextPath | size %}
 
-		{% assign newLevel = false %}
+    {% if nextPathLength >= lastPathLength %}
+      {% assign longestPath = nextPath %}
+      {% assign shortestPath = lastPath %}
+    {% else %}
+      {% assign longestPath = lastPath %}
+      {% assign shortestPath = nextPath %}
+    {% endif %}
 
-		{% for longestPathComponent in longestPath %}
-			{% assign index = forloop.index | minus: 1 %}
-			{% assign shortestPathLastIndex = shortestPath | size | minus: 1 %}
+    {% assign newLevel = false %}
 
-			{% if longestPathComponent != shortestPath[index] %}
-				{% if index != shortestPathLastIndex and forloop.last == false %}
-					{% assign newLevel = true %}
-				{% endif %}
+    {% for longestPathComponent in longestPath %}
+      {% assign index = forloop.index | minus: 1 %}
+      {% assign shortestPathLastIndex = shortestPath | size | minus: 1 %}
 
-				{% if shortestPath[index] == nil %}
-					{% assign newLevel = true %}
-				{% endif %}
-			{% endif %}
-		{% endfor %}
+      {% if longestPathComponent != shortestPath[index] %}
+        {% if index != shortestPathLastIndex and forloop.last == false %}
+          {% assign newLevel = true %}
+        {% endif %}
 
-		{% if newLevel %}
-			{% if nextPathLength >= lastPathLength %}
-				<ul class="{{ include.listClass }}" {{ depthAttr }}="{{ depth }}">
-			{% else %}
-				</ul></li>
-			{% endif %}
-		{% else %}
-			</li>
-		{% endif %}
+        {% if shortestPath[index] == nil %}
+          {% assign newLevel = true %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
 
-		{% assign depth = nextPathLength | minus: rootComponentsLength %}
+    {% if newLevel %}
+      {% assign levelDiff = lastPathLength | minus: nextPathLength %}
 
-		<li class="{{ include.listItemClass }}">
-			{% if sortedPage.content != '' %}
-				<a href="{{ sortedPage.url }}" class="{{ include.linkClass }} {% if page.url == sortedPage.url %}{{ include.activeClass }}{% endif %}">
-			{% endif %}
+      {% if levelDiff < 0 %}
+        <ul class="{{ include.listClass }}" {{ depthAttr }}="{{ depth }}">
+      {% else %}
+        {% for i in (1..levelDiff) %}
+          </ul></li>
+        {% endfor %}
+      {% endif %}
+    {% else %}
+      </li>
+    {% endif %}
 
-			{{ sortedPage.title }}
+    {% assign depth = nextPathLength | minus: rootComponentsLength %}
 
-			{% if sortedPage.content != '' %}
-				</a>
-			{% endif %}
+    <li class="{{ include.listItemClass }}">
+      {% if sortedPage.content != '' %}
+        <a href="{{ sortedPage.url }}" class="{{ include.linkClass }} {% if page.url == sortedPage.url %}{{ include.activeClass }}{% endif %}">
+      {% endif %}
 
-		{% assign lastPath = nextPath %}
-	{% endif %}
+      {{ sortedPage.title }}
+
+      {% if sortedPage.content != '' %}
+        </a>
+      {% endif %}
+    {% assign lastPath = nextPath %}
+  {% endif %}
 {% endfor %}
 
 {% for i in (0..depth) %}
-	</li></ul>
+  </li></ul>
 {% endfor %}
